@@ -313,7 +313,11 @@ async function submitTicket() {
   const desc = document.getElementById('f-desc').value.trim();
   const emailInput = document.getElementById('f-email').value.trim();
   const email = emailInput || getSavedEmail();
-  if (!name || !cls || !selectedType || !desc) { alert('נא למלא את כל השדות ולבחור סוג קריאה'); return; }
+  if (!name && !cls && !selectedType && !desc) { alert('נא למלא את כל השדות ולבחור סוג קריאה'); return; }
+  if (!name) { alert('נא למלא את שמך'); document.getElementById('f-name').focus(); return; }
+  if (!cls) { alert('נא למלא כיתה / מיקום'); document.getElementById('f-class').focus(); return; }
+  if (!selectedType) { alert('נא לבחור סוג קריאה — מחשוב או אב-בית'); return; }
+  if (!desc) { alert('נא לתאר את הבעיה'); document.getElementById('f-desc').focus(); return; }
   if (emailInput && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
     alert('כתובת המייל אינה תקינה. אנא בדוק/י ונסה/י שנית.');
     document.getElementById('f-email').focus();
