@@ -228,6 +228,7 @@ async function confirmDone() {
         body: JSON.stringify({
           email: ticket.email,
           name: ticket.name,
+          cls: ticket.cls,
           description: ticket.description,
           note: note || '',
           type: 'maint'
