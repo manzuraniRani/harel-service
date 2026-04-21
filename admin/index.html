@@ -7,8 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="קריאת שירות" />
   <title>פתיחת קריאת שירות – הראל</title>
-  <link rel="manifest" href="manifest-morot.json" />
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0f0f1a;
@@ -358,7 +357,7 @@ async function submitTicket() {
   setTimeout(() => toast.style.display = 'none', 4000);
 }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('../sw.js');
+
 loadSavedUser();
 </script>
 </body>
