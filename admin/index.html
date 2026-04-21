@@ -288,28 +288,48 @@
       <div style="text-align:center;margin-bottom:2rem;">
         <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
         <div style="font-size:20px;font-weight:700;margin-bottom:6px;">איפוס נתונים</div>
-        <div style="font-size:13px;color:var(--text2);line-height:1.6;">פעולת איפוס תמחק לצמיתות את כל הקריאות.<br>לא ניתן לשחזר לאחר האיפוס.</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;">בחר מה למחוק ולחץ על כפתור האיפוס.<br>לא ניתן לשחזר לאחר האיפוס.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div style="background:var(--surface);border:1.5px solid rgba(255,107,107,0.2);border-radius:var(--radius);padding:1.25rem;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
             <span style="font-size:22px;">💻</span>
             <div>
               <div style="font-size:14px;font-weight:600;">לבורנט מחשבים</div>
               <div style="font-size:12px;color:var(--text2)" id="reset-tech-count">טוען...</div>
             </div>
           </div>
-          <button class="reset-btn" style="width:100%;text-align:center;" onclick="openReset('tech')">🗑 איפוס כל קריאות הלבורנט</button>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="tech-del-open" style="width:16px;height:16px;" />
+              <span>מחק קריאות פתוחות</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="tech-del-done" style="width:16px;height:16px;" />
+              <span>מחק קריאות טופלו</span>
+            </label>
+          </div>
+          <button class="reset-btn" style="width:100%;text-align:center;" onclick="openReset('tech')">🗑 איפוס לבורנט מחשבים</button>
         </div>
         <div style="background:var(--surface);border:1.5px solid rgba(255,107,107,0.2);border-radius:var(--radius);padding:1.25rem;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
             <span style="font-size:22px;">🔧</span>
             <div>
               <div style="font-size:14px;font-weight:600;">אב הבית</div>
               <div style="font-size:12px;color:var(--text2)" id="reset-maint-count">טוען...</div>
             </div>
           </div>
-          <button class="reset-btn" style="width:100%;text-align:center;" onclick="openReset('maint')">🗑 איפוס כל קריאות אב הבית</button>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="maint-del-open" style="width:16px;height:16px;" />
+              <span>מחק קריאות פתוחות</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;">
+              <input type="checkbox" id="maint-del-done" style="width:16px;height:16px;" />
+              <span>מחק קריאות טופלו</span>
+            </label>
+          </div>
+          <button class="reset-btn" style="width:100%;text-align:center;" onclick="openReset('maint')">🗑 איפוס אב הבית</button>
         </div>
       </div>
     </div>
@@ -674,14 +694,25 @@ const RESET_PASSWORD = '260398';
 let pendingResetType = null;
 
 function openReset(type) {
+  const delOpen = document.getElementById(type+'-del-open').checked;
+  const delDone = document.getElementById(type+'-del-done').checked;
+  if (!delOpen && !delDone) { alert('נא לסמן לפחות אפשרות אחת למחיקה'); return; }
+
   pendingResetType = type;
   const label = type === 'tech' ? 'לבורנט מחשבים' : 'אב הבית';
-  const count = [...(activeTickets[type]||[]), ...(doneTickets[type]||[])].length;
-  document.getElementById('reset-modal-title').textContent = `איפוס ${label}`;
+  const openCount = (activeTickets[type]||[]).length;
+  const doneCount = (doneTickets[type]||[]).length;
+
+  let what = [];
+  if (delOpen) what.push('<strong>' + openCount + ' קריאות פתוחות</strong>');
+  if (delDone) what.push('<strong>' + doneCount + ' קריאות טופלו</strong>');
+
+  document.getElementById('reset-modal-title').textContent = 'איפוס ' + label;
   document.getElementById('reset-modal-body').innerHTML =
-    `פעולה זו תמחק לצמיתות את <strong>${count} הקריאות</strong> של ${label} (פתוחות + טופלו).<br>הארכיון לא יימחק.<br><br>הזן סיסמה לאישור:`;
+    'פעולה זו תמחק לצמיתות את ' + what.join(' ו-') + ' של ' + label + '.<br>הארכיון לא יימחק.<br><br>הזן סיסמה לאישור:';
   document.getElementById('reset-pwd').value = '';
   document.getElementById('pwd-error').style.display = 'none';
+  document.getElementById('reset-confirm-btn').onclick = executeReset;
   document.getElementById('reset-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('reset-pwd').focus(), 100);
 }
@@ -701,11 +732,20 @@ async function executeReset() {
   }
   const btn = document.getElementById('reset-confirm-btn');
   btn.textContent = 'מוחק...'; btn.disabled = true;
-  // מחק רק פתוחות וטופלו — לא ארכיון
-  const { error } = await sb.from('tickets')
-    .delete()
-    .eq('type', pendingResetType)
-    .eq('archived', false);
+  const delOpen = document.getElementById(pendingResetType+'-del-open').checked;
+  const delDone = document.getElementById(pendingResetType+'-del-done').checked;
+  let error = null;
+
+  if (delOpen) {
+    const res = await sb.from('tickets').delete()
+      .eq('type', pendingResetType).eq('done', false).eq('archived', false);
+    error = res.error;
+  }
+  if (!error && delDone) {
+    const res = await sb.from('tickets').delete()
+      .eq('type', pendingResetType).eq('done', true).eq('archived', false);
+    error = res.error;
+  }
   btn.textContent = 'אפס הכל'; btn.disabled = false;
   if (error) { alert('שגיאה: ' + error.message); return; }
   closeResetModal();
